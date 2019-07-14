@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/steotia/go-analytics-crypto-api)](https://goreportcard.com/report/github.com/steotia/go-analytics-crypto-api)
+
 # go-analytics-crypto-api
 
 This repo, sets up an API, which returns data about Volume, High and Low growth rates of cryptocurrency pairs in a 5 minute interval.
