@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/steotia/go-analytics-crypto-api)](https://goreportcard.com/report/github.com/steotia/go-analytics-crypto-api)
+[![Go Report Card](https://goreportcard.com/badge/github.com/steotia/go-analytics-crypto-api)](https://goreportcard.com/report/github.com/steotia/go-analytics-crypto-api) [![Maintainability](https://api.codeclimate.com/v1/badges/a81bbfae1dcea67e5074/maintainability)](https://codeclimate.com/github/steotia/go-analytics-crypto-api/maintainability)
 
 # go-analytics-crypto-api
 
