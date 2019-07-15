@@ -262,6 +262,7 @@ func exportAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	atLeastOneHourProcessed := false
 	for cur.Next(context.TODO()) {
 		var doc MarketPairDoc
 		err := cur.Decode(&doc)
@@ -275,10 +276,16 @@ func exportAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 			marketDataPairsMap[doc.MarketPair] = &MarketDataPairs{}
 		}
 		// for the next batch of docs, when the hour has flipped over
+		glog.Info("Hour is ", doc.Hour)
 		if doc.Hour != fromTimeHour {
 			fromTimeHour = doc.Hour
-			t1 = carryOver
+			if atLeastOneHourProcessed {
+				glog.Info("Hour changing, carryover is ", carryOver)
+				t1 = carryOver
+			}
+
 		}
+		atLeastOneHourProcessed = true
 		// last minute as per request
 		if doc.Hour == toTimeHour {
 			t2 = toTimeMin.Minute()
