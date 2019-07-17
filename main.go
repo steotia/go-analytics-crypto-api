@@ -14,11 +14,6 @@ var client *mongo.Client
 func init() {
 	flag.Parse()
 	flag.Lookup("logtostderr").Value.Set("true")
-	var err error
-	client, err = GetMongoDBClient()
-	if err != nil {
-		glog.Fatal(err)
-	}
 }
 func main() {
 	glog.Info("Starting the application...")
