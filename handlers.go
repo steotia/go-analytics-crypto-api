@@ -79,6 +79,6 @@ func exportAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	// // returning JSON back
 	w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(periods.GenerateMetrics())
-	json.NewEncoder(w).Encode(periods)
+	json.NewEncoder(w).Encode(periods.GenerateMetrics())
+	// json.NewEncoder(w).Encode(periods)
 }
