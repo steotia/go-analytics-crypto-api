@@ -4,7 +4,8 @@ import (
 	"errors"
 	"time"
 
-	m "github.com/steotia/go-analytics-crypto-api/marketdata"
+	"github.com/golang/glog"
+	mdata "github.com/steotia/go-analytics-crypto-api/marketdata"
 	"github.com/steotia/go-analytics-crypto-api/metrics"
 )
 
@@ -16,7 +17,8 @@ func (p *Periods) AddPeriod(s *PeriodSlot) {
 	p.PeriodSlots = append(p.PeriodSlots, s)
 }
 
-func (p *Periods) SetMarketData(d m.MarketData) {
+func (p *Periods) SetMarketData(d mdata.MarketData) {
+	glog.Info("SETTING via ", d)
 	truncatedTS := d.Timestamp.Truncate(time.Minute)
 	setNext := false
 	for i, s := range p.PeriodSlots {
@@ -28,10 +30,10 @@ func (p *Periods) SetMarketData(d m.MarketData) {
 			(*s.MarketDataPairsMap[d.MarketName]).setRight(d)
 			setNext = true
 		}
-		if truncatedTS.Before(s.From) {
-			(*s.MarketDataPairsMap[d.MarketName]).setLeft(d)
-			(*s.MarketDataPairsMap[d.MarketName]).setRight(d)
-		}
+		// if truncatedTS.Before(s.From) {
+		// 	(*s.MarketDataPairsMap[d.MarketName]).setLeft(d)
+		// 	(*s.MarketDataPairsMap[d.MarketName]).setRight(d)
+		// }
 		if truncatedTS.After(s.From) && truncatedTS.Before(s.To) {
 			(*s.MarketDataPairsMap[d.MarketName]).setRight(d)
 			setNext = true
@@ -95,16 +97,22 @@ func (p *PeriodSlot) resetMarketDataPairsMap(s string) {
 }
 
 type MarketDataPair struct {
-	Left  m.MarketData `json:"left"`
-	Right m.MarketData `json:"right"`
+	Left  mdata.MarketData `json:"left"`
+	Right mdata.MarketData `json:"right"`
 }
 
-func (m *MarketDataPair) setLeft(a m.MarketData) {
-	m.Left = a
+func (m *MarketDataPair) setLeft(a mdata.MarketData) {
+	nilMarketData := mdata.MarketData{}
+	if m.Left == nilMarketData || a.Timestamp.After(m.Left.Timestamp) {
+		m.Left = a
+	}
 }
 
-func (m *MarketDataPair) setRight(b m.MarketData) {
-	m.Right = b
+func (m *MarketDataPair) setRight(b mdata.MarketData) {
+	nilMarketData := mdata.MarketData{}
+	if m.Right == nilMarketData || b.Timestamp.After(m.Right.Timestamp) {
+		m.Right = b
+	}
 }
 
 func NewBlankPeriod(a time.Time, b time.Time) *PeriodSlot {

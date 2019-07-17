@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/steotia/go-analytics-crypto-api/period"
 	"github.com/steotia/go-analytics-crypto-api/persistence"
 	"github.com/steotia/go-analytics-crypto-api/validators"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func exportAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -31,33 +33,29 @@ func exportAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 	toTimeHour := getMetricsInput.ToTime.Truncate(time.Hour)
 	fromTimeMin := getMetricsInput.FromTime.Truncate(time.Minute)
 	toTimeMin := getMetricsInput.ToTime.Truncate(time.Minute)
-	/*
-		client, _ := persistence.GetMongoDBClient()
-		// if err != nil {
-		// 	return MongoTimeSeries{}, nil
-		// }
-		collection := client.Database("cryptocurrencies").Collection("marketvalues")
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
 
-		filter := persistence.GetFromToFilterBSON(fromTimeHour, toTimeHour)
+	collection := client.Database("cryptocurrencies").Collection("marketvalues")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-		findOptions := options.Find()
-		findOptions.SetSort(map[string]int{"hour": 1})
+	filter := persistence.GetFromToFilterBSON(fromTimeHour, toTimeHour)
 
-		cur, err := collection.Find(ctx, filter, findOptions)
+	findOptions := options.Find()
+	findOptions.SetSort(map[string]int{"hour": 1})
 
-		if err != nil {
-			glog.Info(err.Error())
-			http.Error(w, err.Error(), 500)
-			return
-		}
-		if err := cur.Err(); err != nil {
-			log.Fatal(err)
-			http.Error(w, err.Error(), 500)
-			return
-		}
-	*/
+	cur, err := collection.Find(ctx, filter, findOptions)
+
+	if err != nil {
+		glog.Info(err.Error())
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
 	gap := time.Duration(5) * time.Minute
 	periods, err := period.NewBlankPeriodsBetween(fromTimeMin, toTimeMin, gap)
 	if err != nil {
@@ -66,16 +64,9 @@ func exportAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mongoTimeSeries, err := persistence.NewMongoTimeSeries(fromTimeHour, toTimeHour)
-	if err != nil {
-		log.Fatal(err)
-		http.Error(w, err.Error(), 500)
-	}
-	glog.Info("======>")
-	for mongoTimeSeries.Next() {
+	for cur.Next(context.TODO()) {
 		var doc persistence.MarketPairDoc
-		err := mongoTimeSeries.Decode(&doc)
-		glog.Info(doc)
+		err := cur.Decode(&doc)
 		if err != nil {
 			log.Fatal(err)
 			http.Error(w, err.Error(), 500)
@@ -84,23 +75,8 @@ func exportAnalyticsEndpoint(w http.ResponseWriter, r *http.Request) {
 			periods.SetMarketData(data)
 		}
 	}
-	mongoTimeSeries.Close()
-	glog.Info("<======")
+	cur.Close(context.TODO())
 
-	/*
-		for cur.Next(context.TODO()) {
-			var doc persistence.MarketPairDoc
-			err := cur.Decode(&doc)
-			if err != nil {
-				log.Fatal(err)
-				http.Error(w, err.Error(), 500)
-			}
-			for _, data := range doc.Minutes {
-				periods.SetMarketData(data)
-			}
-		}
-		cur.Close(context.TODO())
-	*/
 	// // returning JSON back
 	w.Header().Set("Content-Type", "application/json")
 	// json.NewEncoder(w).Encode(periods.GenerateMetrics())

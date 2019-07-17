@@ -121,8 +121,8 @@ func TestPeriodSlotPopulateWithMarketDataOutsidePeriod(t *testing.T) {
 
 	val, ok = slot.MarketDataPairsMap[mData.MarketName]
 	assert.True(t, ok)
-	assert.Equal(t, mData, val.Left)
-	assert.Equal(t, mData, val.Right)
+	assert.Equal(t, marketdata.MarketData{}, val.Left)
+	assert.Equal(t, marketdata.MarketData{}, val.Right)
 }
 
 func TestPeriodSlotPopulateWithMarketDataExactPeriod(t *testing.T) {
@@ -207,9 +207,34 @@ func TestPeriodsNeighbouringSlotWithMarketData(t *testing.T) {
 	assert.Equal(t, marketdata.MarketData{}, val.Left)
 	assert.Equal(t, mData, val.Right)
 	assert.Equal(t, mData, nextval.Left)
-	assert.Equal(t, mData, nextval.Right)
-	assert.Equal(t, mData, nextnextval.Left)
-	assert.Equal(t, mData, nextnextval.Right)
+	assert.Equal(t, marketdata.MarketData{}, nextval.Right)
+	assert.Equal(t, marketdata.MarketData{}, nextnextval.Left)
+	assert.Equal(t, marketdata.MarketData{}, nextnextval.Right)
 }
 
-func TestPeriodsGenerateMetrics(t *testing.T) {
+func TestPeriodsStabilityWithUnorderedUpdate(t *testing.T) {
+	t1, _ := time.Parse(
+		time.RFC3339,
+		"2012-11-01T22:08:41+00:00")
+	gap := time.Duration(5) * time.Minute
+	sometime := time.Duration(13) * time.Minute
+	beforesometime := time.Duration(12) * time.Minute
+	t2 := t1.Add(5 * gap)
+
+	periods, _ := NewBlankPeriodsBetween(t1, t2, gap)
+	mData := marketdata.MarketData{
+		High:      1,
+		Timestamp: t1.Add(sometime),
+	}
+	beforemData := marketdata.MarketData{
+		High:      2,
+		Timestamp: t1.Add(beforesometime),
+	}
+	periods.SetMarketData(mData)
+	periods.SetMarketData(beforemData)
+	slot := periods.PeriodSlots[2]
+	val, _ := slot.MarketDataPairsMap[mData.MarketName]
+	assert.Equal(t, marketdata.MarketData{}, val.Left)
+	assert.Equal(t, mData, val.Right)
+
+}
