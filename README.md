@@ -26,7 +26,8 @@ The API does basic Parameter validation
 
 ## TODO
 - Make the period size configurable. Presently it is a fixed 5 minute interval.
-- Fetch only the pairs configured. Presently all pairs are fetched
+- Fetch only the pairs configured. Presently all pairs are fetched. However, the change should be straightforward, as the documents can be filter-able via the pair name.
+- DB Indexing
 - Refactoring to interface the persistence layer where any backend can be plugged in (not just mongo)
 - General refactoring, for e.x. the Handler code is pretty long and can be further refactores, better interfacing in the code
 - Less hardcoding, there are some strings still lying around in the code as hardcoded strings
