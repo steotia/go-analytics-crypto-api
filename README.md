@@ -18,6 +18,9 @@ crypto currency pairs.
 ### Parameters
 `from` is the start time, `to` is the end time of interest, `format` is the return format. `from` cannot be later than `to`.
 
+### Parameter Validation
+The API does basic Parameter validation
+
 #### Sample output
 `curl 'http://localhost:12345/export/analytics?from=2019-07-14T18:00:00&to=2019-07-14T19:00:00&format=json'`
 
