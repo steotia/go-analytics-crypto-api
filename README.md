@@ -2,7 +2,7 @@
 
 # go-analytics-crypto-api
 
-This repo, sets up an API, which returns data about Volume, High and Low growth rates of cryptocurrency pairs in a 5 minute interval.
+This repo, sets up an API, which returns data about Volume, High and Low growth rates of cryptocurrency pairs in a 5 minute interval. The API hits a mongo backend, where the time series data is persisted.
 
 ## Installation
 1. `docker build -t go-analytics-crypto-api -f Dockerfile .` => this creates local Docker image
@@ -20,3 +20,12 @@ crypto currency pairs.
 
 #### Sample output
 `curl 'http://localhost:12345/export/analytics?from=2019-07-14T18:00:00&to=2019-07-14T19:00:00&format=json'`
+
+## TODO
+- Make the period size configurable. Presently it is a fixed 5 minute interval.
+- Fetch only the pairs configured. Presently all pairs are fetched
+- Refactoring to interface the persistence layer where any backend can be plugged in (not just mongo)
+- General refactoring, for e.x. the Handler code is pretty long and can be further refactores, better interfacing in the code
+- Less hardcoding, there are some strings still lying around in the code as hardcoded strings
+- More test coverage! and documentation of exported functions, etc
+
